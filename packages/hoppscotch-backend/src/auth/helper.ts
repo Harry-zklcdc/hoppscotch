@@ -120,10 +120,17 @@ export function authProviderCheck(
   }
 
   const envVariables = VITE_ALLOWED_AUTH_PROVIDERS?.split(',') ?? [];
+  const providerUpper = provider.toUpperCase();
 
-  if (!envVariables.includes(provider.toUpperCase())) return false;
+  // Check for exact match first
+  if (envVariables.includes(providerUpper)) return true;
 
-  return true;
+  // For OIDC, also check if any provider starts with "OIDC:"
+  if (providerUpper === 'OIDC') {
+    return envVariables.some((p) => p.startsWith('OIDC:'));
+  }
+
+  return false;
 }
 
 /**
