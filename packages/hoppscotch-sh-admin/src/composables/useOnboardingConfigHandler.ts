@@ -228,6 +228,15 @@ export function useOnboardingConfigHandler() {
     const usingCustom = mailer.MAILER_USE_CUSTOM_CONFIGS === 'true';
 
     return keys.filter((key) => {
+      if (key.startsWith('OIDC_')) {
+        return [
+          'OIDC_CLIENT_ID',
+          'OIDC_CLIENT_SECRET',
+          'OIDC_CALLBACK_URL',
+          'OIDC_SCOPE',
+        ].includes(key);
+      }
+
       if (!key.startsWith('MAILER_')) return true;
       if (!enabledConfigs.value.includes('MAILER')) return false;
 
