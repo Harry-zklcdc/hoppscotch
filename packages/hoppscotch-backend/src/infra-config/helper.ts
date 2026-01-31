@@ -47,7 +47,6 @@ export function getAuthProviderRequiredKeys(
       InfraConfigEnum.OIDC_CLIENT_SECRET,
       InfraConfigEnum.OIDC_CALLBACK_URL,
       InfraConfigEnum.OIDC_SCOPE,
-      InfraConfigEnum.OIDC_PROVIDER_NAME,
     ],
     [AuthProvider.EMAIL]:
       env['INFRA'].MAILER_USE_CUSTOM_CONFIGS === 'true'
