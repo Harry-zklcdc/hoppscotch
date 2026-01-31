@@ -1,14 +1,34 @@
-import { Strategy } from 'passport-openidconnect'
-import { PassportStrategy } from '@nestjs/passport'
-import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { UserService } from 'src/user/user.service'
-import * as O from 'fp-ts/Option'
-import { AuthService } from '../auth.service'
-import * as E from 'fp-ts/Either'
-import { ConfigService } from '@nestjs/config'
-import { Request } from 'express'
-import { validateEmail } from 'src/utils'
-import { AUTH_EMAIL_NOT_PROVIDED_BY_OAUTH } from 'src/errors'
+import { Strategy } from 'passport-openidconnect';
+import { PassportStrategy } from '@nestjs/passport';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { UserService } from 'src/user/user.service';
+import * as O from 'fp-ts/Option';
+import { AuthService } from '../auth.service';
+import * as E from 'fp-ts/Either';
+import { ConfigService } from '@nestjs/config';
+import { Request } from 'express';
+import { validateEmail } from 'src/utils';
+import { AUTH_EMAIL_NOT_PROVIDED_BY_OAUTH } from 'src/errors';
+import axios from 'axios';
+
+async function fetchOidcConfiguration(issuerUrl: string) {
+  try {
+    const discoveryUrl = issuerUrl.endsWith('/.well-known/openid-configuration')
+      ? issuerUrl
+      : `${issuerUrl}/.well-known/openid-configuration`;
+    
+    const response = await axios.get(discoveryUrl, { timeout: 10000 });
+    return {
+      authorizationEndpoint: response.data.authorization_endpoint,
+      tokenEndpoint: response.data.token_endpoint,
+      userInfoEndpoint: response.data.userinfo_endpoint,
+      issuer: response.data.issuer,
+    };
+  } catch (error) {
+    console.error('Failed to fetch OIDC configuration:', error.message);
+    return null;
+  }
+}
 
 @Injectable()
 export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
@@ -17,24 +37,20 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
     private authService: AuthService,
     private configService: ConfigService,
   ) {
-    const issuerUrl = configService.get<string>('INFRA.OIDC_ISSUER_URL')
-    const authorizationURL = configService.get<string>(
+    const issuerUrl = configService.get<string>('INFRA.OIDC_ISSUER_URL');
+    const manualAuthorizationURL = configService.get<string>(
       'INFRA.OIDC_AUTHORIZATION_ENDPOINT',
-    )
-    const tokenURL = configService.get<string>('INFRA.OIDC_TOKEN_ENDPOINT')
-    const userInfoURL = configService.get<string>(
+    );
+    const manualTokenURL = configService.get<string>('INFRA.OIDC_TOKEN_ENDPOINT');
+    const manualUserInfoURL = configService.get<string>(
       'INFRA.OIDC_USERINFO_ENDPOINT',
-    )
+    );
 
-    // passport-openidconnect requires both issuer AND endpoints
-    // If issuer URL is provided, use it for discovery
-    // Otherwise, require manual endpoint configuration
-    const strategyOptions: Record<string, unknown> = {
+    super({
       issuer: issuerUrl || 'https://placeholder.example.com',
-      authorizationURL:
-        authorizationURL || 'https://placeholder.example.com/authorize',
-      tokenURL: tokenURL || 'https://placeholder.example.com/token',
-      userInfoURL: userInfoURL || 'https://placeholder.example.com/userinfo',
+      authorizationURL: manualAuthorizationURL || 'https://placeholder.example.com/authorize',
+      tokenURL: manualTokenURL || 'https://placeholder.example.com/token',
+      userInfoURL: manualUserInfoURL || 'https://placeholder.example.com/userinfo',
       clientID: configService.get<string>('INFRA.OIDC_CLIENT_ID'),
       clientSecret: configService.get<string>('INFRA.OIDC_CLIENT_SECRET'),
       callbackURL: configService.get<string>('INFRA.OIDC_CALLBACK_URL'),
@@ -44,9 +60,21 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
         'email',
       ],
       passReqToCallback: true,
-    }
+    });
 
-    super(strategyOptions)
+    // Fetch OIDC configuration asynchronously and update strategy
+    if (issuerUrl && !manualAuthorizationURL) {
+      fetchOidcConfiguration(issuerUrl).then((config) => {
+        if (config) {
+          // Update OAuth2 client with discovered endpoints
+          (this as any)._oauth2._authorizeUrl = config.authorizationEndpoint;
+          (this as any)._oauth2._accessTokenUrl = config.tokenEndpoint;
+          (this as any)._userInfoURL = config.userInfoEndpoint;
+          (this as any)._issuer = config.issuer;
+          console.log('OIDC configuration loaded from discovery endpoint');
+        }
+      });
+    }
   }
 
   async validate(
