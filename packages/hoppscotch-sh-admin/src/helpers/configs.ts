@@ -4,7 +4,7 @@ import { InfraConfigEnum } from './backend/graphql';
 // Check if any input validation has failed
 export const hasInputValidationFailed = ref(false);
 
-export type SsoAuthProviders = 'google' | 'microsoft' | 'github';
+export type SsoAuthProviders = 'google' | 'microsoft' | 'github' | 'oidc';
 
 export type ServerConfigs = {
   providers: {
@@ -37,6 +37,21 @@ export type ServerConfigs = {
         callback_url: string;
         scope: string;
         tenant: string;
+      };
+    };
+    oidc: {
+      name: SsoAuthProviders;
+      enabled: boolean;
+      fields: {
+        client_id: string;
+        client_secret: string;
+        callback_url: string;
+        scope: string;
+        issuer_url: string;
+        provider_name: string;
+        authorization_endpoint: string;
+        token_endpoint: string;
+        userinfo_endpoint: string;
       };
     };
   };
@@ -181,6 +196,50 @@ export const GITHUB_CONFIGS: Config[] = [
   },
 ];
 
+export const OIDC_CONFIGS: Config[] = [
+  {
+    name: InfraConfigEnum.OidcClientId,
+    key: 'client_id',
+  },
+  {
+    name: InfraConfigEnum.OidcClientSecret,
+    key: 'client_secret',
+  },
+  {
+    name: InfraConfigEnum.OidcCallbackUrl,
+    key: 'callback_url',
+  },
+  {
+    name: InfraConfigEnum.OidcScope,
+    key: 'scope',
+  },
+  {
+    name: InfraConfigEnum.OidcIssuerUrl,
+    key: 'issuer_url',
+    optional: true,
+  },
+  {
+    name: InfraConfigEnum.OidcProviderName,
+    key: 'provider_name',
+    optional: true,
+  },
+  {
+    name: InfraConfigEnum.OidcAuthorizationEndpoint,
+    key: 'authorization_endpoint',
+    optional: true,
+  },
+  {
+    name: InfraConfigEnum.OidcTokenEndpoint,
+    key: 'token_endpoint',
+    optional: true,
+  },
+  {
+    name: InfraConfigEnum.OidcUserinfoEndpoint,
+    key: 'userinfo_endpoint',
+    optional: true,
+  },
+];
+
 export const MAIL_CONFIGS: Config[] = [
   {
     name: InfraConfigEnum.MailerSmtpUrl,
@@ -294,6 +353,7 @@ export const ALL_CONFIGS = [
   GOOGLE_CONFIGS,
   MICROSOFT_CONFIGS,
   GITHUB_CONFIGS,
+  OIDC_CONFIGS,
   MAIL_CONFIGS,
   CUSTOM_MAIL_CONFIGS,
   DATA_SHARING_CONFIGS,
