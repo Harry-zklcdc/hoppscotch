@@ -18,10 +18,23 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
     private configService: ConfigService,
   ) {
     const issuerUrl = configService.get<string>('INFRA.OIDC_ISSUER_URL')
+    const authorizationURL = configService.get<string>(
+      'INFRA.OIDC_AUTHORIZATION_ENDPOINT',
+    )
+    const tokenURL = configService.get<string>('INFRA.OIDC_TOKEN_ENDPOINT')
+    const userInfoURL = configService.get<string>(
+      'INFRA.OIDC_USERINFO_ENDPOINT',
+    )
 
-    // Build strategy options based on whether issuer URL is provided (discovery mode)
-    // or manual endpoints are configured
+    // passport-openidconnect requires both issuer AND endpoints
+    // If issuer URL is provided, use it for discovery
+    // Otherwise, require manual endpoint configuration
     const strategyOptions: Record<string, unknown> = {
+      issuer: issuerUrl || 'https://placeholder.example.com',
+      authorizationURL:
+        authorizationURL || 'https://placeholder.example.com/authorize',
+      tokenURL: tokenURL || 'https://placeholder.example.com/token',
+      userInfoURL: userInfoURL || 'https://placeholder.example.com/userinfo',
       clientID: configService.get<string>('INFRA.OIDC_CLIENT_ID'),
       clientSecret: configService.get<string>('INFRA.OIDC_CLIENT_SECRET'),
       callbackURL: configService.get<string>('INFRA.OIDC_CALLBACK_URL'),
@@ -32,22 +45,6 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
       ],
       passReqToCallback: true,
       store: true,
-    }
-
-    // If issuer URL is provided, use OIDC discovery
-    if (issuerUrl) {
-      strategyOptions.issuer = issuerUrl
-    } else {
-      // Otherwise, use manual endpoint configuration
-      strategyOptions.authorizationURL = configService.get<string>(
-        'INFRA.OIDC_AUTHORIZATION_ENDPOINT',
-      )
-      strategyOptions.tokenURL = configService.get<string>(
-        'INFRA.OIDC_TOKEN_ENDPOINT',
-      )
-      strategyOptions.userInfoURL = configService.get<string>(
-        'INFRA.OIDC_USERINFO_ENDPOINT',
-      )
     }
 
     super(strategyOptions)
