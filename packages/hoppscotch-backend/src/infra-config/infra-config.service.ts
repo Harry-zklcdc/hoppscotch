@@ -480,11 +480,19 @@ export class InfraConfigService implements OnModuleInit {
    * @returns string[]
    */
   getAllowedAuthProviders() {
-    return (
+    const providers =
       this.configService
         .get<string>('INFRA.VITE_ALLOWED_AUTH_PROVIDERS')
         ?.split(',') ?? []
-    );
+
+    return providers.map((provider) => {
+      if (provider === 'OIDC') {
+        const oidcProviderName =
+          this.configService.get<string>('INFRA.OIDC_PROVIDER_NAME') || 'OIDC'
+        return `OIDC:${oidcProviderName}`
+      }
+      return provider
+    })
   }
 
   /**

@@ -46,10 +46,10 @@
           @click="signInWithMicrosoft"
         />
         <HoppSmartItem
-          v-if="allowedAuthProviders.includes('OIDC')"
+          v-if="allowedAuthProviders.some((p) => p.startsWith('OIDC'))"
           :loading="signingInWithOidc"
           :icon="IconOidc"
-          :label="t('state.continue_oidc')"
+          :label="t('state.continue_with_provider', { provider: oidcProviderName })"
           @click="signInWithOidc"
         />
         <HoppSmartItem
@@ -171,7 +171,7 @@
 
 <script setup lang="ts">
 import { computedAsync } from '@vueuse/core';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from '~/composables/i18n';
 import { useToast } from '~/composables/toast';
 import { auth } from '~/helpers/auth';
@@ -204,6 +204,17 @@ const mode = ref('sign-in');
 const nonAdminUser = ref(false);
 
 const allowedAuthProviders = ref<string[]>([]);
+
+// Extract OIDC provider name from allowedAuthProviders (format: "OIDC:ProviderName")
+const oidcProviderName = computed(() => {
+  const oidcProvider = allowedAuthProviders.value.find((p) =>
+    p.startsWith('OIDC')
+  );
+  if (oidcProvider && oidcProvider.includes(':')) {
+    return oidcProvider.split(':')[1];
+  }
+  return 'OIDC';
+});
 
 // check if the user can re-run onboarding
 const canReRunOnboarding = computedAsync(async () => {

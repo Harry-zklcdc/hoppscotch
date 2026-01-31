@@ -284,7 +284,7 @@
     "continue_github": "Continue with Github",
     "continue_google": "Continue with Google",
     "continue_microsoft": "Continue with Microsoft",
-    "continue_oidc": "Continue with OIDC",
+    "continue_with_provider": "Continue with {provider}",
     "copied_to_clipboard": "Copied to clipboard",
     "create_team_failure": "Failed to create workspace!!",
     "create_team_success": "Workspace created successfully!!",
