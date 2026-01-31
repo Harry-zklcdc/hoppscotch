@@ -44,7 +44,6 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
         'email',
       ],
       passReqToCallback: true,
-      store: true,
     }
 
     super(strategyOptions)
