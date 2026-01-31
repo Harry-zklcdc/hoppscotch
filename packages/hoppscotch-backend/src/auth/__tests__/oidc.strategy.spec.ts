@@ -130,7 +130,6 @@ describe('OidcStrategy', () => {
         'id-token',
         'access-token',
         'refresh-token',
-        jest.fn(),
       )
 
       expect(mockUserService.findUserByEmail).toHaveBeenCalledWith('dwight@dundermifflin.com')
@@ -177,7 +176,6 @@ describe('OidcStrategy', () => {
         'id-token',
         'access-token',
         'refresh-token',
-        jest.fn(),
       )
 
       expect(mockUserService.findUserByEmail).toHaveBeenCalledWith('dwight@dundermifflin.com')
@@ -239,7 +237,6 @@ describe('OidcStrategy', () => {
         'id-token',
         'access-token',
         'refresh-token',
-        jest.fn(),
       )
 
       expect(mockUserService.findUserByEmail).toHaveBeenCalledWith('dwight@dundermifflin.com')
@@ -263,7 +260,6 @@ describe('OidcStrategy', () => {
           'id-token',
           'access-token',
           'refresh-token',
-          jest.fn(),
         ),
       ).rejects.toThrow(UnauthorizedException)
 
@@ -276,7 +272,6 @@ describe('OidcStrategy', () => {
           'id-token',
           'access-token',
           'refresh-token',
-          jest.fn(),
         ),
       ).rejects.toThrow(AUTH_EMAIL_NOT_PROVIDED_BY_OAUTH)
     })
@@ -296,7 +291,6 @@ describe('OidcStrategy', () => {
           'id-token',
           'access-token',
           'refresh-token',
-          jest.fn(),
         ),
       ).rejects.toThrow(UnauthorizedException)
     })
@@ -316,7 +310,6 @@ describe('OidcStrategy', () => {
           'id-token',
           'access-token',
           'refresh-token',
-          jest.fn(),
         ),
       ).rejects.toThrow(UnauthorizedException)
     })
@@ -340,7 +333,6 @@ describe('OidcStrategy', () => {
           'id-token',
           'access-token',
           'refresh-token',
-          jest.fn(),
         ),
       ).rejects.toThrow(UnauthorizedException)
     })
