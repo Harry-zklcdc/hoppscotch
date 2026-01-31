@@ -6,7 +6,7 @@ import { InfraConfigEnum } from '~/helpers/backend/graphql';
 import { getLocalConfig, setLocalConfig } from '~/helpers/localpersistence';
 import { makeReadableKey } from '~/helpers/utils/readableKey';
 
-export type OAuthProvider = 'GOOGLE' | 'GITHUB' | 'MICROSOFT';
+export type OAuthProvider = 'GOOGLE' | 'GITHUB' | 'MICROSOFT' | 'OIDC';
 export type EnabledConfig = OAuthProvider | 'OAUTH' | 'MAILER' | 'EMAIL';
 
 // common OAuth keys used across providers
@@ -14,6 +14,9 @@ type OAuthKeys = 'CLIENT_ID' | 'CLIENT_SECRET' | 'CALLBACK_URL' | 'SCOPE';
 
 // Microsoft specific keys
 type MicrosoftKeys = OAuthKeys | 'TENANT';
+
+// OIDC specific keys
+type OidcKeys = OAuthKeys | 'ISSUER_URL' | 'PROVIDER_NAME' | 'AUTHORIZATION_ENDPOINT' | 'TOKEN_ENDPOINT' | 'USERINFO_ENDPOINT';
 
 type OAuthConfig<Keys extends string, Prefix extends string> = {
   [K in Keys as `${Prefix}_${K}`]: string;
@@ -37,6 +40,7 @@ export type Configs = {
     GOOGLE: OAuthConfig<OAuthKeys, 'GOOGLE'>;
     GITHUB: OAuthConfig<OAuthKeys, 'GITHUB'>;
     MICROSOFT: OAuthConfig<MicrosoftKeys, 'MICROSOFT'>;
+    OIDC: OAuthConfig<OidcKeys, 'OIDC'>;
   };
   mailerConfigs: {
     [K in `MAILER_${MailerConfigKeys}`]: string;
@@ -72,6 +76,17 @@ function mapOAuthProviders(
       MICROSOFT_CALLBACK_URL: '',
       MICROSOFT_SCOPE: configs.MICROSOFT_SCOPE ?? '',
       MICROSOFT_TENANT: configs.MICROSOFT_TENANT ?? '',
+    },
+    OIDC: {
+      OIDC_CLIENT_ID: configs.OIDC_CLIENT_ID ?? '',
+      OIDC_CLIENT_SECRET: configs.OIDC_CLIENT_SECRET ?? '',
+      OIDC_CALLBACK_URL: '',
+      OIDC_SCOPE: configs.OIDC_SCOPE ?? '',
+      OIDC_ISSUER_URL: configs.OIDC_ISSUER_URL ?? '',
+      OIDC_PROVIDER_NAME: configs.OIDC_PROVIDER_NAME ?? '',
+      OIDC_AUTHORIZATION_ENDPOINT: configs.OIDC_AUTHORIZATION_ENDPOINT ?? '',
+      OIDC_TOKEN_ENDPOINT: configs.OIDC_TOKEN_ENDPOINT ?? '',
+      OIDC_USERINFO_ENDPOINT: configs.OIDC_USERINFO_ENDPOINT ?? '',
     },
   };
 }
@@ -130,7 +145,7 @@ export function useOnboardingConfigHandler() {
   const toggleConfig = (key: EnabledConfig | 'OAUTH' | 'EMAIL') => {
     if (key === 'OAUTH') {
       enabledConfigs.value = enabledConfigs.value.filter(
-        (c) => !['GOOGLE', 'GITHUB', 'MICROSOFT'].includes(c)
+        (c) => !['GOOGLE', 'GITHUB', 'MICROSOFT', 'OIDC'].includes(c)
       );
     }
 
@@ -172,6 +187,9 @@ export function useOnboardingConfigHandler() {
     }
     if (oAuth.MICROSOFT.MICROSOFT_CLIENT_ID) {
       oAuth.MICROSOFT.MICROSOFT_CALLBACK_URL = `${base}/auth/microsoft/callback`;
+    }
+    if (oAuth.OIDC.OIDC_CLIENT_ID) {
+      oAuth.OIDC.OIDC_CALLBACK_URL = `${base}/auth/oidc/callback`;
     }
   };
 
@@ -289,6 +307,7 @@ export function useOnboardingConfigHandler() {
       ...currentConfigs.value.oAuthProviders.GOOGLE,
       ...currentConfigs.value.oAuthProviders.GITHUB,
       ...currentConfigs.value.oAuthProviders.MICROSOFT,
+      ...currentConfigs.value.oAuthProviders.OIDC,
       ...currentConfigs.value.mailerConfigs,
     };
 

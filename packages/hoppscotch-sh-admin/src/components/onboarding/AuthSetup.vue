@@ -196,6 +196,7 @@ const OAuthProviders: (OAuthProvider | 'OAUTH')[] = [
   'GOOGLE',
   'GITHUB',
   'MICROSOFT',
+  'OIDC',
   'OAUTH',
 ];
 const isOAuthEnabled = ref(false);
