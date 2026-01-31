@@ -91,7 +91,6 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
     idToken: string,
     accessToken: string,
     refreshToken: string,
-    done: (err: Error | null, user?: unknown) => void,
   ) {
     // Extract email from profile - OIDC providers may structure this differently
     const email = profile.emails?.[0]?.value
