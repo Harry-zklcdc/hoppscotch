@@ -27,6 +27,7 @@ import {
   MAIL_CONFIGS,
   MICROSOFT_CONFIGS,
   MOCK_SERVER_CONFIGS,
+  OIDC_CONFIGS,
   ServerConfigs,
   TOKEN_VALIDATION_CONFIGS,
   UpdatedConfigs,
@@ -119,6 +120,27 @@ export function useConfigHandler(updatedConfigs?: ServerConfigs) {
             callback_url: getFieldValue(InfraConfigEnum.MicrosoftCallbackUrl),
             scope: getFieldValue(InfraConfigEnum.MicrosoftScope),
             tenant: getFieldValue(InfraConfigEnum.MicrosoftTenant),
+          },
+        },
+        oidc: {
+          name: 'oidc',
+          enabled: allowedAuthProviders.value.some((provider) =>
+            provider.startsWith(`${AuthProvider.Oidc}:`)
+          ),
+          fields: {
+            client_id: getFieldValue(InfraConfigEnum.OidcClientId),
+            client_secret: getFieldValue(InfraConfigEnum.OidcClientSecret),
+            callback_url: getFieldValue(InfraConfigEnum.OidcCallbackUrl),
+            scope: getFieldValue(InfraConfigEnum.OidcScope),
+            issuer_url: getFieldValue(InfraConfigEnum.OidcIssuerUrl),
+            provider_name: getFieldValue(InfraConfigEnum.OidcProviderName),
+            authorization_endpoint: getFieldValue(
+              InfraConfigEnum.OidcAuthorizationEndpoint
+            ),
+            token_endpoint: getFieldValue(InfraConfigEnum.OidcTokenEndpoint),
+            userinfo_endpoint: getFieldValue(
+              InfraConfigEnum.OidcUserinfoEndpoint
+            ),
           },
         },
       },
@@ -264,6 +286,7 @@ export function useConfigHandler(updatedConfigs?: ServerConfigs) {
       config.providers.github,
       config.providers.google,
       config.providers.microsoft,
+      config.providers.oidc,
       config.mailConfigs,
       config.rateLimitConfigs,
       config.tokenConfigs,
@@ -303,6 +326,23 @@ export function useConfigHandler(updatedConfigs?: ServerConfigs) {
       // and not empty strings
       if (section.name === 'rate_limit')
         return Object.values(section.fields).some(isNotValidNumber);
+
+      // For OIDC section, exclude optional fields from validation
+      if (section.name === 'oidc') {
+        const OPTIONAL_OIDC_KEYS = new Set([
+          'issuer_url',
+          'provider_name',
+          'authorization_endpoint',
+          'token_endpoint',
+          'userinfo_endpoint',
+        ]);
+        return (
+          section.enabled &&
+          Object.entries(section.fields).some(
+            ([key, value]) => isFieldEmpty(value) && !OPTIONAL_OIDC_KEYS.has(key)
+          )
+        );
+      }
 
       return (
         section.enabled && Object.values(section.fields).some(isFieldEmpty)
@@ -353,6 +393,11 @@ export function useConfigHandler(updatedConfigs?: ServerConfigs) {
         config: MICROSOFT_CONFIGS,
         enabled: updatedConfigs?.providers.microsoft.enabled,
         fields: updatedConfigs?.providers.microsoft.fields,
+      },
+      {
+        config: OIDC_CONFIGS,
+        enabled: updatedConfigs?.providers.oidc.enabled,
+        fields: updatedConfigs?.providers.oidc.fields,
       },
       {
         config: MAIL_CONFIGS,
@@ -430,6 +475,12 @@ export function useConfigHandler(updatedConfigs?: ServerConfigs) {
       {
         provider: AuthProvider.Github,
         status: updatedConfigs?.providers.github.enabled
+          ? ServiceStatus.Enable
+          : ServiceStatus.Disable,
+      },
+      {
+        provider: AuthProvider.Oidc,
+        status: updatedConfigs?.providers.oidc.enabled
           ? ServiceStatus.Enable
           : ServiceStatus.Disable,
       },

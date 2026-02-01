@@ -42,6 +42,12 @@ export function getAuthProviderRequiredKeys(
       InfraConfigEnum.MICROSOFT_SCOPE,
       InfraConfigEnum.MICROSOFT_TENANT,
     ],
+    [AuthProvider.OIDC]: [
+      InfraConfigEnum.OIDC_CLIENT_ID,
+      InfraConfigEnum.OIDC_CLIENT_SECRET,
+      InfraConfigEnum.OIDC_CALLBACK_URL,
+      InfraConfigEnum.OIDC_SCOPE,
+    ],
     [AuthProvider.EMAIL]:
       env['INFRA'].MAILER_USE_CUSTOM_CONFIGS === 'true'
         ? [
@@ -279,6 +285,51 @@ export async function getDefaultInfraConfigs(): Promise<DefaultInfraConfig[]> {
     },
     {
       name: InfraConfigEnum.MICROSOFT_TENANT,
+      value: null,
+      isEncrypted: false,
+    },
+    {
+      name: InfraConfigEnum.OIDC_ISSUER_URL,
+      value: null,
+      isEncrypted: false,
+    },
+    {
+      name: InfraConfigEnum.OIDC_CLIENT_ID,
+      value: null,
+      isEncrypted: true,
+    },
+    {
+      name: InfraConfigEnum.OIDC_CLIENT_SECRET,
+      value: null,
+      isEncrypted: true,
+    },
+    {
+      name: InfraConfigEnum.OIDC_CALLBACK_URL,
+      value: null,
+      isEncrypted: false,
+    },
+    {
+      name: InfraConfigEnum.OIDC_SCOPE,
+      value: null,
+      isEncrypted: false,
+    },
+    {
+      name: InfraConfigEnum.OIDC_PROVIDER_NAME,
+      value: null,
+      isEncrypted: false,
+    },
+    {
+      name: InfraConfigEnum.OIDC_AUTHORIZATION_ENDPOINT,
+      value: null,
+      isEncrypted: false,
+    },
+    {
+      name: InfraConfigEnum.OIDC_TOKEN_ENDPOINT,
+      value: null,
+      isEncrypted: false,
+    },
+    {
+      name: InfraConfigEnum.OIDC_USERINFO_ENDPOINT,
       value: null,
       isEncrypted: false,
     },

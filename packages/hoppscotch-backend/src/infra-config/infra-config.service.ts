@@ -298,6 +298,13 @@ export class InfraConfigService implements OnModuleInit {
           configMap.MICROSOFT_SCOPE &&
           configMap.MICROSOFT_TENANT
         );
+      case AuthProvider.OIDC:
+        return (
+          configMap.OIDC_CLIENT_ID &&
+          configMap.OIDC_CLIENT_SECRET &&
+          configMap.OIDC_CALLBACK_URL &&
+          configMap.OIDC_SCOPE
+        );
       case AuthProvider.EMAIL:
         if (configMap.MAILER_SMTP_ENABLE !== 'true') return false;
         if (configMap.MAILER_USE_CUSTOM_CONFIGS === 'true') {
@@ -473,11 +480,19 @@ export class InfraConfigService implements OnModuleInit {
    * @returns string[]
    */
   getAllowedAuthProviders() {
-    return (
+    const providers =
       this.configService
         .get<string>('INFRA.VITE_ALLOWED_AUTH_PROVIDERS')
         ?.split(',') ?? []
-    );
+
+    return providers.map((provider) => {
+      if (provider === 'OIDC') {
+        const oidcProviderName =
+          this.configService.get<string>('INFRA.OIDC_PROVIDER_NAME') || 'OIDC'
+        return `OIDC:${oidcProviderName}`
+      }
+      return provider
+    })
   }
 
   /**

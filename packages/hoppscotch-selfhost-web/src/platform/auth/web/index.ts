@@ -1,7 +1,8 @@
 import * as E from "fp-ts/Either"
 import axios from "axios"
 import { BehaviorSubject, Subject } from "rxjs"
-import { Ref, ref, watch } from "vue"
+import { markRaw, Ref, ref, watch } from "vue"
+import IconKey from "~icons/lucide/key"
 
 import { getService } from "@hoppscotch/common/modules/dioc"
 import {
@@ -375,6 +376,17 @@ export const def: AuthPlatformDef = {
     }
   },
   getAllowedAuthProviders,
+
+  additionalLoginItems: [
+    {
+      id: "OIDC",
+      icon: markRaw(IconKey),
+      text: (t) => t("auth.continue_with_auth_provider", { provider: "OIDC" }),
+      onClick: () => {
+        window.location.href = `${import.meta.env.VITE_BACKEND_API_URL}/auth/oidc`
+      },
+    },
+  ],
 
   /**
    * Verifies if the current user's authentication tokens are valid

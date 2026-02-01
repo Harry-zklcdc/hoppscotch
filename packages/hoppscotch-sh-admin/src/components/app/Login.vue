@@ -46,6 +46,13 @@
           @click="signInWithMicrosoft"
         />
         <HoppSmartItem
+          v-if="allowedAuthProviders.some((p) => p.startsWith('OIDC'))"
+          :loading="signingInWithOidc"
+          :icon="IconOidc"
+          :label="t('state.continue_with_provider', { provider: oidcProviderName })"
+          @click="signInWithOidc"
+        />
+        <HoppSmartItem
           v-if="allowedAuthProviders.includes('EMAIL')"
           :icon="IconEmail"
           :label="t('state.continue_email')"
@@ -164,7 +171,7 @@
 
 <script setup lang="ts">
 import { computedAsync } from '@vueuse/core';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from '~/composables/i18n';
 import { useToast } from '~/composables/toast';
 import { auth } from '~/helpers/auth';
@@ -173,6 +180,7 @@ import IconEmail from '~icons/auth/email';
 import IconGithub from '~icons/auth/github';
 import IconGoogle from '~icons/auth/google';
 import IconMicrosoft from '~icons/auth/microsoft';
+import IconOidc from '~icons/auth/oidc';
 import IconArrowLeft from '~icons/lucide/arrow-left';
 import IconFileText from '~icons/lucide/file-text';
 
@@ -190,11 +198,23 @@ const error = ref(false);
 const signingInWithGoogle = ref(false);
 const signingInWithGitHub = ref(false);
 const signingInWithMicrosoft = ref(false);
+const signingInWithOidc = ref(false);
 const signingInWithEmail = ref(false);
 const mode = ref('sign-in');
 const nonAdminUser = ref(false);
 
 const allowedAuthProviders = ref<string[]>([]);
+
+// Extract OIDC provider name from allowedAuthProviders (format: "OIDC:ProviderName")
+const oidcProviderName = computed(() => {
+  const oidcProvider = allowedAuthProviders.value.find((p) =>
+    p.startsWith('OIDC')
+  );
+  if (oidcProvider && oidcProvider.includes(':')) {
+    return oidcProvider.split(':')[1];
+  }
+  return 'OIDC';
+});
 
 // check if the user can re-run onboarding
 const canReRunOnboarding = computedAsync(async () => {
@@ -250,6 +270,19 @@ const signInWithMicrosoft = () => {
   }
 
   signingInWithMicrosoft.value = false;
+};
+
+const signInWithOidc = () => {
+  signingInWithOidc.value = true;
+
+  try {
+    auth.signInUserWithOidc();
+  } catch (e) {
+    console.error(e);
+    toast.error(t('state.oidc_signin_failure'));
+  }
+
+  signingInWithOidc.value = false;
 };
 
 const signInWithEmail = async () => {
